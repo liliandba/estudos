@@ -1,0 +1,26 @@
+python 
+
+
+
+INSTALAR python-pip 
+
+	install python-pip
+	pip install --upgrade pip
+	
+	
+	para desistalar alguma biblioteca usando pip 
+		python3 -m pip uninstall cx_Oracle 
+	
+
+	
+	
+INSTALAR ORACLE CX PA	RA PYTHON 2 
+
+python -m pip install cx_Oracle==7.3 --upgrade --user
+pip install openpyxl
+
+
+
+echo $PYTHONPATH
+
+

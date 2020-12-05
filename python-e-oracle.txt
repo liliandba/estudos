@@ -1,0 +1,385 @@
+set lines 400 pages 999 
+col file_name for a60
+
+
+install instant client 
+	sudo yum install oracle-instantclient19.6-basic-19.6.0.0.0-1.x86_64.rpm
+
+
+install sql developer 
+	pre req: Java JDK installed
+		yum install java-1.8.0-openjdk.x86_64
+
+	rpm -Uhv sqldeveloper-(build number)-1.noarch.rpm
+	
+
+cx_Oracle 
+	fontes: https://cx-oracle.readthedocs.io/en/latest/user_guide/introduction.html
+	https://oracle.github.io/python-cx_Oracle/samples/tutorial/Python-and-Oracle-Database-Scripting-for-the-Future.html
+	https://github.com/oracle/python-cx_Oracle/tree/master/samples
+	
+	https://cx-oracle.readthedocs.io/en/7.1.3/
+	Python and Oracle Database Tutorial: Scripting for the Future -> https://oracle.github.io/python-cx_Oracle/samples/tutorial/Python-and-Oracle-Database-Scripting-for-the-Future.html
+
+
+
+	-- instalar o cx_oracle 8
+	python3 -m pip install cx_Oracle --upgrade
+
+	-- desistalar o cx_oracle 8 
+	python3 -m pip uninstall cx_Oracle 
+	
+
+
+	-- instalar a versão compativel com python2
+	python -m pip install cx_Oracle==7.3 --upgrade --user
+	
+	
+	
+
+STRING DE CONEXÃO AO BANCO
+	connection string is commonly of the format hostname/servicename
+	
+	
+	Sobre autenticação com wallet 
+		A wallet configuration file cwallet.sso for secure connection can be located with, or separately from, the tnsnames.ora and sqlnet.ora files. 
+		It should be securely stored. The sqlnet.ora file’s WALLET_LOCATION path should be set to the directory containing cwallet.sso. 
+		For Oracle Autonomous Database use of wallets, see Connecting to Autononmous Databases.
+
+		Note the Easy Connect Syntax for Connection Strings can set many common configuration options without needing tnsnames.ora or sqlnet.ora files.
+
+
+
+	Example: Standalone Connection to Oracle Database
+
+		import cx_Oracle
+
+		userpwd = ". . ." # Obtain password string from a user prompt or environment variable
+
+		connection = cx_Oracle.connect("hr", userpwd, "dbhost.example.com/orclpdb1", encoding="UTF-8")
+
+		cx_Oracle also supports external authentication so passwords do not need to be in the application.
+
+
+	mais sobre tipos de autenticações 
+		https://cx-oracle.readthedocs.io/en/latest/user_guide/connection_handling.html#extauth
+		
+		
+		
+		
+	dá para criar um módulo de conexão ao banco 
+	# db_config.py
+
+	user = "lilian"
+	pw = "lilian123"
+	dsn = "localhost/XE"
+
+	
+		
+		
+		
+
+INSTALAÇÃO 
+	python3 -m pip install cx_Oracle --upgrade
+
+
+
+SQL EXECUTION
+	módulos Cursor.execute() or Cursor.executemany() para executar. 
+	Rows can then be iterated over, or can be fetched using one of the methods Cursor.fetchone(), Cursor.fetchmany() or Cursor.fetchall(). 
+	
+	exemplo: 
+		cur.execute("select * from MyTable")
+		
+	importante:
+		Interpolating or concatenating user data with SQL statements, for example cur.execute("SELECT * FROM mytab WHERE mycol = '" + myvar + "'"), is a security risk and impacts performance. 
+		Use bind variables instead. For example, cur.execute("SELECT * FROM mytab WHERE mycol = :mybv", mybv=myvar).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# query.py
+
+import cx_Oracle
+
+# Establish the database connection
+connection = cx_Oracle.connect("hr", userpwd, "dbhost.example.com/orclpdb1")
+
+# Obtain a cursor
+cursor = connection.cursor()
+
+# Data for binding
+managerId = 145
+firstName = "Peter"
+
+# Execute the query
+sql = """SELECT first_name, last_name
+         FROM employees
+         WHERE manager_id = :mid AND first_name = :fn"""
+cursor.execute(sql, mid = managerId, fn = firstName)
+
+# Loop over the result set
+for row in cursor:
+    print(row)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+ ------------- 
+ 
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
+import cx_Oracle
+conn=cx_Oracle.connect('system/system@192.168.8.210/subE3')
+c=conn.cursor()
+c.callproc('PROC_TABLESPACE')
+x=c.execute('select * from tablespace_temp')
+result=x.fetchall()
+print result[1][3]
+c.close()
+conn.close()
+    
+    
+    
+    
+    
+    
+    
+    
+-- 
+# myscript.py
+
+import cx_Oracle
+
+
+connection = cx_Oracle.connect("lilian", "lilian123", "localhost/XE")
+
+cursor = connection.cursor()
+cursor.execute("""
+        SELECT first_name, last_name
+        FROM hr.employees
+        WHERE department_id = :did AND employee_id > :eid""",
+        did = 50,
+        eid = 190)
+for fname, lname in cursor:
+    print("Values:", fname, lname)
+    
+    
+    
+    
+    
+select * from DBA_TABLESPACE_USAGE_METRICS;
+    
+    
+    
+    
+# ve_tablespaces.py
+
+import cx_Oracle
+
+connection = cx_Oracle.connect("lilian", "lilian123", "localhost/XE")
+
+cursor = connection.cursor()
+cursor.execute("""
+	select tablespace_name, tablespace_size, used_percent 
+	from DBA_TABLESPACE_USAGE_METRICS
+         """)
+for tbsname, tbssize,tbsusedpercent in cursor:
+    print("Tablespace:", tbsname, ", Size:", tbssize, ", Used Percent:",tbsusedpercent)    
+    
+    
+    
+    
+    
+# ve_tablespaces2.py
+
+import cx_Oracle
+
+connection = cx_Oracle.connect("lilian", "lilian123", "localhost/XE")
+
+cursor = connection.cursor()
+cursor.execute("""
+	select tablespace_name, tablespace_size, used_percent 
+	from DBA_TABLESPACE_USAGE_METRICS
+	where used_percent => :vthreshold
+         """,
+         vthreshold=90)
+for tbsname, tbssize,tbsusedpercent in cursor:
+    print("Tablespace:", tbsname, ", Size:", tbssize, ", Used Percent:",tbsusedpercent)     
+    
+    
+    
+    
+    
+ 
+ # ve_parametro_create_file_dest 
+
+import cx_Oracle
+
+connection = cx_Oracle.connect("lilian", "lilian123", "localhost/XE")
+
+cursor = connection.cursor()
+cursor.execute("""
+	
+         """,
+         vthreshold=90)
+for tbsname, tbssize,tbsusedpercent in cursor:
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ ------------------------------------------------ segunda tentativa 
+ 
+ - desistalado o cx_oracle 8
+ - reinstalado o cx_oracle 7.3
+ - reinstalado com o usuario oracle
+ - instalado o pacote openpyxl
+ 
+ 
+ 
+ 
+ 
+ # myscript.py
+
+from __future__ import print_function
+
+import cx_Oracle
+
+connection = cx_Oracle.connect("lilian", "lilian123", "localhost/XE")
+
+cursor = connection.cursor()
+cursor.execute("""
+    SELECT first_name, last_name
+    FROM employees
+    WHERE department_id = :did AND employee_id > :eid""",
+    did = 50,
+    eid = 190)
+for fname, lname in cursor:
+    print("Values:", fname, lname)
+    
+    
+    
+# exemplo uso de dual     
+from __future__ import print_function
+
+import cx_Oracle
+
+connection = cx_Oracle.connect("lilian", "lilian123", "localhost/XE")
+cursor = connection.cursor()
+
+try:
+    cursor.execute("select 1 / 0 from dual")
+except cx_Oracle.DatabaseError as exc:
+    error, = exc.args
+    print("Oracle-Error-Code:", error.code)
+    print("Oracle-Error-Message:", error.message)
+
+
+
+
+# exemplo para restart do ORacle 
+import cx_Oracle
+
+connection = cx_Oracle.connect(
+        mode=cx_Oracle.SYSDBA | cx_Oracle.PRELIM_AUTH)
+connection.startup()
+connection = cx_Oracle.connect(mode=cx_Oracle.SYSDBA)
+cursor = connection.cursor()
+cursor.execute("alter database mount")
+cursor.execute("alter database open")
+
+ 
+ 
+
+# Exemplo de verificacao da versão do oracle 
+import cx_Oracle
+import db_config #tem que ter sido criado previamente 
+
+con = cx_Oracle.connect(db_config.user, db_config.pw, db_config.dsn)
+print("Database version:", con.version)
+
+
+
+# outro exemplo de query 
+import cx_Oracle
+import db_config
+
+con = cx_Oracle.connect(db_config.user, db_config.pw, db_config.dsn)
+
+cur = con.cursor()
+cur.execute("select * from v$database")
+res = cur.fetchall()
+for row in res:
+    print(row)
+    
+#importante: abaixo, fechando as conexoes abertas  no banco e cursores.    
+cur.close()
+con.close()    
+
+
+
+
+#EXEMPLO DE VARIABLES BIND EM QUERIES SIMPLES 
+import cx_Oracle
+import db_config
+
+con = cx_Oracle.connect(db_config.user, db_config.pw, db_config.dsn)
+cur = con.cursor()
+
+sql = "select * from dept where deptno = :id order by deptno"
+
+cur.execute(sql, id = 20)
+res = cur.fetchall()
+print(res)
+
+cur.execute(sql, id = 10)
+res = cur.fetchall()
+print(res)
+
+
+
+
+# exemplo simples de add datafile via python 
+import cx_Oracle
+import db_config
+
+con = cx_Oracle.connect(db_config.user, db_config.pw, db_config.dsn)
+cur = con.cursor()
+
+sql = "alter tablespace lilian add datafile"
+
+cur.execute(sql)
+
+
+

@@ -1,0 +1,402 @@
+SALTSTACK 
+
+-- FONTES DE ESTUDO:
+	Salt in 10 Minutes: https://docs.saltstack.com/en/3000/topics/tutorials/walkthrough.html
+	Troubleshooting the Salt Minion - https://docs.saltstack.com/en/latest/topics/troubleshooting/minion.html#troubleshooting-the-salt-minion
+	Listagem de salt modules: https://docs.saltstack.com/en/3000/ref/states/all/index.html
+
+
+____________________________ indice  _______________________
+- Fontes de estudo 
+- Curso Salt - laboratórios 
+- Comandos Comuns
+- Troubleshooting 
+- Conceitos 
+
+
+
+____________________________ CURSO SALT - Laboratórios _______________________
+
+
+--  PASSO A PASSO PRIMEIRO LABORATÓRIO 
+	Solution
+
+	    Begin by logging in to the Salt Master lab server using the credentials provided on the hands-on lab page.
+
+	     ssh cloud_user@PUBLIC_IP_ADDRESS
+
+	Install Salt on the Salt Master and Minion1 Servers
+
+	1-  Retrieve the Salt installation file.
+	     curl -L https://bootstrap.saltstack.com -o install_salt.sh
+
+	2- Install Salt.
+	     sudo sh install_salt.sh -P -M
+
+	3- In a new terminal, log in to the Minion lab server using the credentials provided on the hands-on lab page.
+	     ssh cloud_user@PUBLIC_IP_ADDRESS
+
+	4- Edit the hosts file.
+	     sudo vim /etc/hosts
+
+	5- Add the private IP of the Salt Master lab server.
+	     PRIVATE_IP_ADDRESS salt
+	   
+	   Save the changes and exit the editor.
+
+	6- retrieve the Salt installation file.
+	     curl -L https://bootstrap.saltstack.com -o install_salt.sh
+
+	7 - Install Salt.
+	     sudo sh install_salt.sh -P
+
+	8 - Add the Master Fingerprint to Both Servers
+	    On the Salt Master server, retrieve the public key.
+	     	sudo salt-key -F master
+
+	    Copy the master.pub key.
+	    
+	9 - On the Minion server, edit the minion file.
+	    	sudo vim /etc/salt/minion
+
+	    Search for the "master_finger" configuration.
+	    Uncomment the "master_finger" configuration.
+	    Paste the key copied from the Salt Master server between the two single quotes.
+	    Save the changes and exit the editor.
+	    
+	    também ajustar a linha #Master:salt -> descomentar esta linha. 
+
+	10 -   Restart the salt-minion service.
+	     sudo systemctl restart salt-minion
+
+	    On the Salt Master server, edit the minion file.
+	     sudo vim /etc/salt/minion
+
+	    Search for the "master_finger" configuration.
+	    Uncomment the "master_finger" configuration.
+	    Paste the key copied from the Salt Master server between the two single quotes.
+	    Save the changes and exit the editor.
+
+	11- Verify the Local Keys and Accept Both Minions
+		salt-key -F master
+
+	12 - Check the local key of the Salt Master server.
+		sudo salt-call --local key.finger
+
+	13 - On the Minion sever, check the local key.
+	     	sudo salt-call --local key.finger
+
+	14 - On the Salt Master server, accept both minions.
+	     sudo salt-key -A
+
+	15 -Choose to proceed.
+		Restart the salt-minion service.
+	     	
+	     	sudo systemctl restart salt-minion
+	 
+ 
+ ------------------------------------------------------------------------------------- 
+ 
+---------------------- CONCEITOS ----------------------__ 
+ 
+Grains
+
+	Salt uses a system called Grains to build up static data about minions. This data includes information about the operating system that is running  
+ 
+ States 
+ 	 State management, also frequently called Software Configuration Management (SCM), is a program that puts and keeps a system into a predetermined state. 
+ 
+ 
+ 
+ 
+https://por.small-business-tracker.com/why-use-saltstack-automation-411116
+Por que usar o SaltStack para automação e orquestração
+	-- Concorrente do  Ansible, Puppet e Chef.
+	
+	
+	
+
+Execution Modules 
+	Preconfigured modules that allow you to use remote execution against one or more servers.
+	
+	
+
+ 
+ 
+ 
+---------------------- fim conceitos  ----------------------   
+
+
+
+
+
+---------------------------- TROUBLESHOOTING ----------------------------
+nc -v -z <servidor master> 4505
+	nc -v -z salt 4505
+
+
+ nmap -sS -q -p 4505-4506 <servidor master>
+  	nmap -sS -q -p 4505-4506 master
+
+
+
+
+---------------------------- fim TROUBLESHOOTING ----------------------------
+
+
+
+
+
+
+----------------------  COMANDOS COMUNS  ---------------------- 
+ 
+ salt -G 
+ 	-g indica q está executando o comando via grains 
+ 
+ 
+ salt --version
+ 
+ salt-minion --version
+ salt-minion --versions-report
+ 
+ salt-minion -d 
+ systemctl stop salt-minion
+ systemctl enable salt-minion
+   
+  MODO DEBUG - TEM QUE FAZER COM O SERVIÇO PARADO. 
+ salt-minion -l debug
+ 
+
+ 
+ 
+ service salt-master restart
+ systemctl enable salt-minion
+  
+ 
+ *** EXECUTION MODULES *** 
+ 
+ 
+ 
+ salt '<target> <function> [arguments]
+ 
+ salt '*' test.ping 
+ salt '*' test.echo 'Hello world' 
+ salt '*' cmd.run "whoami" runas=oracle 
+ salt '*' test.ping,test.echo , "sucesso"
+  salt '*' cmd.run "whoami" runas=
+ 
+ salt '*' state.highstate
+  
+  
+  
+ salt-key --list all
+ salt-key -F master
+ 
+ 
+ 
+ *** Targeting *** 
+ 
+ 
+ - Criando um usuário remotamente 
+ 	salt 'minion1' user.add lilian home=/home/lilian 
+ 	salt -G 'os:Ubuntu' user.add joao home=/home/joao 
+ 	salt '*' user.add monge home=/home/monge
+ 	
+ 	Há um jeito de combinar dados do tipo de servidor (grain) ou nome do minion. P
+ 	Por exemplo, se quiser criar usuários em todos os sistemas operacionais com ubuntU, ou em todos os minios com nome like 'db':
+ 		salt -C 'G@os:ubuntu or E@db*' user.add oracle home=/home/oracle 
+ 	onde 
+ 		-C -> forma compound (regex e grains)
+ 		-G -> caracteristicas Grains
+ 		-E -> composição do minion id 	
+ 		
+ 		
+ 
+ 
+ 
+ 
+*** Execution Modules *** 
+listagem de execution modules para salt: https://docs.saltstack.com/en/3000/ref/modules/all/index.html]
+
+	salt.modules.oracle
+	salt.modules.github module
+	salt.modules.git
+	
+
+
+	sys Module -> The sys module provides information about the available functions on the minion
+	cmd module -> Comando para executar comandos 
+	
+		salt 'salt' sys.list_modules
+		salt 'salt' sys.list_functions user -> onde "user" é o nome do módulo
+		
+		-- help 
+		salt 'salt' sys.doc user --> onde user é onome do modulo
+		
+		-- upgrade
+		salt '*' pkg.upgrade 
+		
+		-- remove and install 
+		salt '*' pkg.remove vim  
+		salt '*' pkg.remove install 
+		
+		
+	
+		-- utilizando o cmd module
+		salt 'salt' cmd.run 'echo "set softtabstop=2" >> .vimrc' 
+		salt 'salt' cmd.run 'cat .vimrc' 
+		
+		salt 'oracle11g-xe-vagrant' cmd.run 'ls -l /tmp'
+		salt 'oracle11g-xe-vagrant' cmd.run 'df -h '
+		salt '*' cmd.run 'df -h | grep /u01'
+		
+		salt '*' cmd.run 'ps -ef | grep pmon'
+
+		-- rodando determinado script com outro usuário 
+		salt 'oracle11g-xe-vagrant' cmd.run 'python /home/oracle/scripts/ve_tablespaces.py' runas=oracle
+
+	
+ 
+ 
+ 
+ 
+ ***  SALT STATES 
+ State is a reusable piece of end state configurations 
+ (são modulos de configuração / execução) 
+ 
+ states usam "state funcions" para configurar servidores. 
+ um grupo de states correlatados são chamados de "formula" 
+ 
+ Podem ser chamados por outros states :) 
+ 
+ 
+ dana:
+   user.present:
+     - home: /home/dana
+     - shell: /bin/bash 
+     
+ 
+ O diretório onde os states são armazenados chama-se "file_roots"
+ Sua configuração fica no arquivo /etc/salt/master , na linha file_roots 
+ 
+ assim, o primeiro passo é abrir o arquivo de configuração do salt master e descomentar as linhas referentes ao file_roots 
+	 file_roots
+	  base:
+	    - /srv/salt 
+    
+ depois, precisa reiniciar o serviço do salt master:
+ 	systemctl restart salt-master
+ 
+ 
+ 
+ para iniciar a criação das fórmulas, no master precisa cria o file_roots directory:
+ 	mkdir -p /srv/salt 
+ 
+ 
+ 
+ 
+ outros comandos 
+ salt '*' sys.list_state_functions pkg
+ salt 'oracle11g-xe-vagrant' sys.state_doc pkg
+ salt 'oracle11g-xe-vagrant' sys.state_argspec pkg.installed 
+
+ 
+ 
+ 
+ 
+ CRIANDO UM STATE
+ 
+ -- abaixo, states criados como exemplo no curso de salt para um servidor PHP. 
+   são criados o módulo de instalação do php e demais necessários. 
+   
+   Os arquivos de configuração dos states são criados na pasta /etc/srv/<nome do state> 
+   Eles tem o nome  <module>.sls 
+   
+   Depois de criados os módulos, é feita a chamada de teste dos states: 
+   	salt 'minion' state.sls  php test=true   (onde php é o nome do state) 
+   	
+   Para utilizar o state, o comando abaixo é utilizado]:
+   	salt 'minion' state.sls  php   (onde php é o nome do state) 
+   	
+   	
+  
+  Para testar os módulos adicionais, usar o comando abaixo:
+  	salt 'minion' state.apply  php,php.mod-mysql, php.mod-curl, test=true 
+   	
+   
+  
+  
+    
+ - Criar o arquivo init.sls na pasta /etc/srv/php   (onde php é o nome do state) 
+ 
+ 	php_install:			<declaração de nome>
+ 	  pkg.installed		<state function>
+ 	    - name: php 		< propriedades>
+ 
+ 
+
+- criar os arquivos de state complementares (na mesma pasta) 
+
+* arquivo  /etc/srv/php/mod-mysql.sls
+  	include:
+ 	  - php 			-> indica que será utilizado o modulo php 
+ 	
+ 	install_mod_mysql:
+ 	  pkg.installed:
+ 	    - name: php-mysql 
+
+* arquivo /etc/srv/php/mod-curl.sls
+   	include:
+ 	  - php 			-> indica que será utilizado o modulo php 
+ 	
+ 	install_mod_curl:
+ 	  pkg.installed:
+ 	    - name: php-curl 
+ 	     
+* arquivo /etc/srv/php/mod-xml.sls
+   	include:
+ 	  - php 			-> indica que será utilizado o modulo php 
+ 	
+ 	install_mod_xml:
+ 	  pkg.installed:
+ 	    - name: php-xml 
+
+
+* arquivo /etc/srv/php/mod-gd.sls
+   	include:
+ 	  - php 			-> indica que será utilizado o modulo php 
+ 	
+ 	install_mod_gd:
+ 	  pkg.installed:
+ 	    - name: php-gd 
+
+ 	    
+* arquivo /etc/srv/php/mod-mbstring.sls
+   	include:
+ 	  - php 			-> indica que será utilizado o modulo php 
+ 	
+ 	install_mod_mbstring:
+ 	  pkg.installed:
+ 	    - name: php-mbstring  	    
+ 	    
+ 	    	    
+ 	    
+* arquivo /etc/srv/php/mod-xmlrpc.sls
+   	include:
+ 	  - php 			-> indica que será utilizado o modulo php 
+ 	
+ 	install_mod_xmlrpc:
+ 	  pkg.installed:
+ 	    - name: php-xmlrpc
+ 	    
+ 	    
+ 	    
+ 	      	    
+  	     
+ 
+---------------------- fim  COMANDOS COMUNS  ---------------------- 
+  
+  
+  
+
+
