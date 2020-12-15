@@ -1,0 +1,77 @@
+JENKIS 
+
+fontes: https://www.jenkins.io/doc/book/installing/linux/
+
+
+instalação
+
+https://pkg.jenkins.io/redhat/
+  sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat/jenkins.repo
+  rpm --import https://pkg.jenkins.io/redhat/jenkins.io.key
+  yum install jenkins
+  
+  -- não funcionou... assim, tive q rodar igual abaixo:
+sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    http://pkg.jenkins-ci.org/redhat/jenkins.repo
+sudo rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key
+sudo dnf upgrade
+sudo dnf install jenkins java-devel
+
+
+systemctl start jenkins
+systemctl status jenkins
+
+
+  
+  
+  CRIADO DIRETÓRIO /U01/JENKINS 
+  	pq na doc orienta a ter mínimo de 1 gb de disco, ideal 10gb
+  	
+  	
+  	
+  	
+ CONFIGURANDO 
+ 
+ no browser, navegar para a página 
+ 	localhost:8080
+ no terminal, pegar a senha temporaria 
+ 	cat /var/lib/jenkins/secrets/initialAdminPassword
+ 	
+ 	
+ 	admin123
+ 	http://localhost:8080/
+ 	
+ 	
+ 	
+Generating an SSH key pair
+
+ssh-keygen -f ~/.ssh/jenkins_agent_key
+
+
+
+PARA ALTERAR O IDIOMA DO JENKINS 
+
+
+
+    Clique em Gerenciar Jenkins> Gerenciar plug-ins> [guia 'Disponível']
+    No filtro, procure por: localidade .
+    Clique na caixa de seleção Locale Plugin e instale sem reiniciar .
+
+    Após a conclusão da instalação:
+        Em Gerenciar Jenkins> Configurar sistema , deve haver uma seção " Localidade ".
+        Digite o código language_LOCALE padrão para inglês: en_US
+        Clique em Ignorar a preferência do navegador e forçar esse idioma para todos os usuários .
+
+
+ 
+
+
+
+NODES
+
+- Node name is name for the slave connection. 
+-  Name that uniquely identifies an agent within this Jenkins installation. This does not have to be the same as the agent hostname (where applicable), but it is often convenient to make them the same. The name may not contain any characters from this list: ?*/\%!@#$^&|<>[]:;
+
+
+
+

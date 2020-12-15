@@ -1,4 +1,16 @@
+PAREI AQUI 
+
+https://docs.saltstack.com/en/latest/topics/grains/index.html
+
+
+
+
+
 SALTSTACK 
+
+
+Em outubro de 2020, a VMware comprou a Saltstack 
+
 
 -- FONTES DE ESTUDO:
 	Salt in 10 Minutes: https://docs.saltstack.com/en/3000/topics/tutorials/walkthrough.html
@@ -6,13 +18,11 @@ SALTSTACK
 	Listagem de salt modules: https://docs.saltstack.com/en/3000/ref/states/all/index.html
 
 
-____________________________ indice  _______________________
-- Fontes de estudo 
-- Curso Salt - laboratórios 
-- Comandos Comuns
-- Troubleshooting 
-- Conceitos 
-
+____________________________ DÚVIDAS _______________________
+ 
+ --- Qual a diferença entre STATES e PILLAR 
+ 
+ 
 
 
 ____________________________ CURSO SALT - Laboratórios _______________________
@@ -101,12 +111,26 @@ ____________________________ CURSO SALT - Laboratórios _______________________
  
 Grains
 
-	Salt uses a system called Grains to build up static data about minions. This data includes information about the operating system that is running  
+	Salt uses a system called Grains to build up static data about minions. This data includes information about the operating system that is running
+	Em geral, grains são dados estáticos do target.   
  
  States 
+ 	 A reusable declaration that configures a specific part of a system. Each state is defined using a state declaration.
  	 State management, also frequently called Software Configuration Management (SCM), is a program that puts and keeps a system into a predetermined state. 
+ 	
+ State Declaration 	
+ 	A top level section of a state file that lists the state function calls and arguments that make up a state. Each state declaration starts with a unique ID.
+
+States tree
+	The collection of state files  
  
  
+State Functions 	
+	Commands that you call to perform a configuration task on a system. 
+ 
+ 
+State File 	
+	A file with an SLS extension that contains one or more state declarations. 
  
  
 https://por.small-business-tracker.com/why-use-saltstack-automation-411116
@@ -118,10 +142,48 @@ Por que usar o SaltStack para automação e orquestração
 
 Execution Modules 
 	Preconfigured modules that allow you to use remote execution against one or more servers.
-	
-	
+	The basis for Salt States.
 
+
+Formula
+A collection of Salt state and Salt pillar files that configure an application or system component. Most formulas are made up of several states spread across multiple state files.
+	
+	
+Functions
+
+
+	
+	
+Pillar 
+ The pillar is an interface designed to offer values that the master distributes to (proxy) minions. 
+ Por padrão, ficam no diretorio /srv/pillar 
  
+ 
+ 
+ / $ cat /srv/pillar/data_file.sls 
+{
+    "hosts": {
+        "switch01": "10.0.0.1",
+        "router01": "10.0.0.2",
+        "server01": "10.0.0.3"
+    }
+}
+
+
+Pillar File 	
+	A file with an SLS extension that defines custom variables and data for a system.
+ 
+ 
+ 
+ 
+ estrutura de diretórios 
+ /srv/
+├── formulas
+├── pillar
+|   └── top.sls
+└── salt
+    └── top.sls
+    
  
  
 ---------------------- fim conceitos  ----------------------   
@@ -187,11 +249,31 @@ nc -v -z <servidor master> 4505
  
  salt '*' state.highstate
   
-  
+ 
+ -- adicionando tempo de timeout 
+ 	salt -t 60
+	salt '*' state.apply -t 60 
+	
+	 	
+ 	
+ 	 
   
  salt-key --list all
  salt-key -F master
  
+ 
+-- executando um state: 
+	sudo salt '*' state.apply name-of-your-sls-file-with-no-extension
+ 
+ ou seja, se o state chama-se exemplo.sls, a gente roda:
+ 	salt '*' state.apply exemplo 
+ 
+ 
+Listando gains  
+salt '*' grains.ls  
+
+	listando grains em detalhes: salt '*' grains.items
+	
  
  
  *** Targeting *** 
@@ -270,8 +352,12 @@ listagem de execution modules para salt: https://docs.saltstack.com/en/3000/ref/
  Podem ser chamados por outros states :) 
  
  
- dana:
-   user.present:
+ 
+ 
+ 
+ 
+ dana: 			-> state id: é o nome do state e precisa ser unico. Pode conter espaços e numeros tb. 
+   user.present:		-> função do state. 
      - home: /home/dana
      - shell: /bin/bash 
      
@@ -302,97 +388,337 @@ listagem de execution modules para salt: https://docs.saltstack.com/en/3000/ref/
 
  
  
+ -- para rodar multiplas funções no salt 
+salt '*' cmd.run,test.ping 'whoami', 
  
  
- CRIANDO UM STATE
  
- -- abaixo, states criados como exemplo no curso de salt para um servidor PHP. 
-   são criados o módulo de instalação do php e demais necessários. 
-   
-   Os arquivos de configuração dos states são criados na pasta /etc/srv/<nome do state> 
-   Eles tem o nome  <module>.sls 
-   
-   Depois de criados os módulos, é feita a chamada de teste dos states: 
-   	salt 'minion' state.sls  php test=true   (onde php é o nome do state) 
-   	
-   Para utilizar o state, o comando abaixo é utilizado]:
-   	salt 'minion' state.sls  php   (onde php é o nome do state) 
-   	
-   	
+ **** CRIANDO UM STATE
+	 
+	 -- abaixo, states criados como exemplo no curso de salt para um servidor PHP. 
+	   são criados o módulo de instalação do php e demais necessários. 
+	   
+	   Os arquivos de configuração dos states são criados na pasta /etc/srv/<nome do state> 
+	   Eles tem o nome  <module>.sls 
+	   
+	   Depois de criados os módulos, é feita a chamada de teste dos states: 
+	   	salt 'minion' state.sls  php test=true   (onde php é o nome do state) 
+	   	
+	   Para utilizar o state, o comando abaixo é utilizado]:
+	   	salt 'minion' state.sls  php   (onde php é o nome do state) 
+	   	
+	   	
+	  
+	  Para testar os módulos adicionais, usar o comando abaixo:
+	  	salt 'minion' state.apply  php,php.mod-mysql,php.mod-curl, php.mod-xml,php.mod-mbstring,php.mod-xmlrpc test=true 
+	   	
+	   
+	   Para rodar os módulos adicionais, usar o comando abaixo:
+	  	salt 'minion' state.apply  php,php.mod-mysql,php.mod-curl, php.mod-xml,php.mod-mbstring,php.mod-xmlrpc
+	   	
+	   
+	  
+	    
+	 - Criar o arquivo init.sls na pasta /etc/srv/php   (onde php é o nome do state) 
+	 
+	 	php_install:			<declaração de nome>
+	 	  pkg.installed		<state function>
+	 	    - name: php 		< propriedades>
+	 
+	 
+
+	- criar os arquivos de state complementares (na mesma pasta) 
+
+	* arquivo  /etc/srv/php/mod-mysql.sls
+	  	include:
+	 	  - php 			-> indica que será utilizado o modulo php 
+	 	
+	 	install_mod_mysql:
+	 	  pkg.installed:
+	 	    - name: php-mysql 
+
+	* arquivo /etc/srv/php/mod-curl.sls
+	   	include:
+	 	  - php 			-> indica que será utilizado o modulo php 
+	 	
+	 	install_mod_curl:
+	 	  pkg.installed:
+	 	    - name: php-curl 
+	 	     
+	* arquivo /etc/srv/php/mod-xml.sls
+	   	include:
+	 	  - php 			-> indica que será utilizado o modulo php 
+	 	
+	 	install_mod_xml:
+	 	  pkg.installed:
+	 	    - name: php-xml 
+
+
+	* arquivo /etc/srv/php/mod-gd.sls
+	   	include:
+	 	  - php 			-> indica que será utilizado o modulo php 
+	 	
+	 	install_mod_gd:
+	 	  pkg.installed:
+	 	    - name: php-gd 
+
+	 	    
+	* arquivo /etc/srv/php/mod-mbstring.sls
+	   	include:
+	 	  - php 			-> indica que será utilizado o modulo php 
+	 	
+	 	install_mod_mbstring:
+	 	  pkg.installed:
+	 	    - name: php-mbstring  	    
+	 	    
+	 	    	    
+	 	    
+	* arquivo /etc/srv/php/mod-xmlrpc.sls
+	   	include:
+	 	  - php 			-> indica que será utilizado o modulo php 
+	 	
+	 	install_mod_xmlrpc:
+	 	  pkg.installed:
+	 	    - name: php-xmlrpc
+	 	    
+	 	    
+
+*** top.sls file 
+  o arquivo top.sls mapea quais servidores que deverão usar determinados states. 
+  formato yaml 
   
-  Para testar os módulos adicionais, usar o comando abaixo:
-  	salt 'minion' state.apply  php,php.mod-mysql, php.mod-curl, test=true 
-   	
-   
+  Fica no diretório /srv/salt/top.sql 
   
-  
-    
- - Criar o arquivo init.sls na pasta /etc/srv/php   (onde php é o nome do state) 
- 
- 	php_install:			<declaração de nome>
- 	  pkg.installed		<state function>
- 	    - name: php 		< propriedades>
- 
- 
-
-- criar os arquivos de state complementares (na mesma pasta) 
-
-* arquivo  /etc/srv/php/mod-mysql.sls
-  	include:
- 	  - php 			-> indica que será utilizado o modulo php 
- 	
- 	install_mod_mysql:
- 	  pkg.installed:
- 	    - name: php-mysql 
-
-* arquivo /etc/srv/php/mod-curl.sls
-   	include:
- 	  - php 			-> indica que será utilizado o modulo php 
- 	
- 	install_mod_curl:
- 	  pkg.installed:
- 	    - name: php-curl 
- 	     
-* arquivo /etc/srv/php/mod-xml.sls
-   	include:
- 	  - php 			-> indica que será utilizado o modulo php 
- 	
- 	install_mod_xml:
- 	  pkg.installed:
- 	    - name: php-xml 
-
-
-* arquivo /etc/srv/php/mod-gd.sls
-   	include:
- 	  - php 			-> indica que será utilizado o modulo php 
- 	
- 	install_mod_gd:
- 	  pkg.installed:
- 	    - name: php-gd 
-
- 	    
-* arquivo /etc/srv/php/mod-mbstring.sls
-   	include:
- 	  - php 			-> indica que será utilizado o modulo php 
- 	
- 	install_mod_mbstring:
- 	  pkg.installed:
- 	    - name: php-mbstring  	    
- 	    
- 	    	    
- 	    
-* arquivo /etc/srv/php/mod-xmlrpc.sls
-   	include:
- 	  - php 			-> indica que será utilizado o modulo php 
- 	
- 	install_mod_xmlrpc:
- 	  pkg.installed:
- 	    - name: php-xmlrpc
- 	    
- 	    
- 	    
+  É configurado no arquivo /etc/salt/master,  campo state_toping 
+  	    
+  	    
+  HIERARQUIA DO ARQUIVO (state tree) 
+  definições de: 
+  - enviroment
+  - targets
+  - states 
  	      	    
-  	     
+  	
+  	
+	 1- criar o arquivo /srv/salt/top.sls 
+	 
+	 
+	 2 - editar 
+	 	base:
+	 	  'web*': 		-> nome do minion... neste caso, qq minion que começe com web
+	 	    - php   	        ->  a partir daqui, serão listados os states necessários 
+	 	    - php.mod-mysql 
+	 	    - php.mod-curl 
+	 	    - php.mod-xml 
+	 	    - php.mod-gd 
+	 	    - php.mod-mbstring 
+	 	    - php.mod-xmlrpc  
+	 	    
+	 	    
+	3 - testar 
+		salt 'seb1' state.highstate teste=true
+
+
+
+
+---- resumo para criar um state 
+
+1- criar pasta  /srv/salt/<modulo>
+2- criar arquivo /srv/salt/<modulo>/init.sls 
+3 - criar pasta /srv/salt/<modulo>/config 		-> para eventuais arquivos de configuraçlao 
+
+
+
+
+-- outros comandos de state
+	salt '*' state.apply <state> 
+	
+	onde o "state" é o nome do arquivo de state sem a extenção sls. 
+	
+	EXEMPLO DE STATES 
+	
+	1- state que cria um diretório 
+		create my_new_directory:
+		 file.directory:
+		   - name: /opt/my_new_directory
+		   - user: root
+		   - group: root
+		   - mode: 755
+
+	2 - state que verifica se o serviço está no ar 
+	  service.running:
+	    - name: mysql
+
+
+
+	3 - state utilizando git 
+	
+	
+	4 - exemplo de state que garante q o serviço será iniciado no startup (observe q o id tem espaços mesmo!) :
+	Make sure the mysql service is running and enable it to start at boot:
+	  service.running:
+	    - name: mysql
+	    - enable: True
+	    
+    
+	5 - Clone the SaltStack bootstrap script repo:
+	  pkg.installed: 
+	    - name: git # make sure git is installed first!
+	  git.latest:
+	    - name: https://github.com/saltstack/salt-bootstrap
+	    - rev: develop
+	    - target: /tmp/salt
+    
+
+	6 - state para adicionar um usuário 
+	user account for pete:
+	  user.present:
+	    - name: pete
+	    - shell: /bin/bash
+	    - home: /home/pete
+	    - groups:
+	      - sudo
+
+
+	7 - adicionando esntrada no /etc/hosts 
+	myserver in hosts file:
+	  host.present:
+	    - name: myserver
+	    - ip: 192.168.0.42
+	    
+    
+	
+
+
+
+** Managing Files 
+
+	When using a template for a managed file in Salt, what parameter must be included
+	
+
+
+
+
+** Basico Templating 
+
+- Escrito em linguagem Jinja 
+
+
+salt '*' grains.fetch os_family
+
+salt -L '<minion>' state.sls 
+salt -L 'minion1,minion2' state.sls 
+
+
+
+Formato padrão -> a ser adicionado no arquivo int.sls
+
+	{% if grains ['os_family'] == 'Debian %} 
+	{% elif grains ['os_family'] == 'RedHat %}
+	{% endif %} 
+	
+	
+colocando variaveis 
+	{% set apache = salt['grains.filter_by']  ({ 
+	'Debian
+
+USANDO UM MÓDULO EM JINGA 
+	salt[modulo.funcion]('parameters')
+	salt.module.funcion('parameteres')
+	
+
+
+
+
+NOME DE STATES 
+top.sls 
+
+init.sls
+config.sls
+restart.sls 
+
+Por exemplo, se for de um serviço apache, seria:
+init.sls
+config.sls -> apache.config
+restart.sls -> apache.restart 
+
+
+outros nomes 
+
+
+
+**  pillar 
+
+
+** Como encripitar dados em um pillar 
+
+Dá para encriptar usando GPG
+	mkdir /etc/salt/gpgkeys
+	chmod 0700 /etc/salt/gpgkeys
+	gpg --gen-key -homedir /etc/salt/gpgkeys 
+	yum install rng-tools   -- não entendi pra que :C 
+	rngd -r /dev/urandom 
+	gpg --homedir /etc/salt/gpgkeys/ --armor --export saltstack > exported_key.gpg    --> onde o nome da chave será "saltstack" 
+	gpg --import exported_key.gpg 
+	
+	sudo !! 
+	
+	por exemplo, dá pra criar um pillar com a senha criptografada do mysql
+	
+	echo -n "passwrod" | sudo gpg --armor --batch -- trust-model always --encrypt -r saltstack      --> gerando a cypher to use as owur root mysql user password 
+	(copiar o resultado exibido na tela) 
+	
+	vi /srv/pillar/mysql.sls 
+	
+	       #!yaml|gpg  
+		mysql:
+		  server:
+		    bind: 172.31.24.3 
+		root:
+		  password: | 
+		  <colar aqui o bloco gpg copiado>  com a devida identação 
+		  
+	vi /srv/salt/mysql/root.sls
+	
+		include:
+		  - mysql
+		  - mysql.python    
+		  
+		root_user:
+		  mysql_user.present:
+		    - name: root
+		    - password:  {{ pillar['mysql']['root']['password'] }} 
+		    - host: localhost 
+		    
+		    
+	vi /srv/salt/mysql/databases.sls
+	
+		wordpres_database:
+	 	  mysql_database.present:
+	 	    - name: wordpress
+	 	    - host: 192.168.50.12
+	 	    - connection_user: root
+	 	    - connection_pass: {{ pillar['mysql']['root']['password'] }} 
+	 	    - connection_charset: utf8 
+	 	    
+	 	    
+	 vi /srv/salt/mysql/user.sls
+	 	onde tibvver a linha connection_pass colocar o valor {{ pillar['mysql']['root']['password'] }} 
+	 	
+	 	
+	 tesstando o state 
+	 salt 'db1' state.sls mysql,mysql.root test=true 
+		    
+		
+	salt 'db1' pillar.items 
+	
+		
+	
+	
+	
+	
+	
+
  
 ---------------------- fim  COMANDOS COMUNS  ---------------------- 
   
@@ -400,3 +726,65 @@ listagem de execution modules para salt: https://docs.saltstack.com/en/3000/ref/
   
 
 
+
+-- questionario 
+What needs to be set in the file_roots
+	One or more environments can be set in the file_roots. 
+	The directory from which Salt states will be served.
+
+
+What does watch_in do in the following state?
+fail2ban_conf:
+  file.managed:
+    - source: salt://fail2ban/config
+    - name: /etc/fail2ban/fail2ban.conf
+    - watch_in: fail2ban_restart
+    
+    
+	watch_in is a requisite that calls the dependent state; this means that, in the above example, the fail2ban_restart will be run after the provided fail2ban_conf state. 
+	Link: https://linuxacademy.com/cp/courses/lesson/course/1827/lesson/6/module/190
+
+
+	
+When referencing a local file, how can we reference our file roots directory from within a Salt state?
+	Use salt:// to reference the file roots directory from within a Salt state.
+	
+
+What action does this State perform?
+vimrc:
+  file.managed:
+    - name: /etc/vimrc
+    - source: salt://vim/vimrc
+    
+    Updates the /etc/vimrc file on the minion server to match the configuration file provided on the master at [file_roots]/vim/vimrc.
+    
+    
+What must be included in the top.sls file?
+	Targets
+	Thre enviroment
+	States 
+	
+	grains are not mandatory int the top.sls
+	
+	
+What does the prereq requisite do	
+
+	Tests the target state to see if it returns as true; if so, it runs the dependent state after the targeted state.
+
+
+How can we view available functions for a state module?
+	salt '<target>' sys.list_state_functions <statemodule>
+	
+	
+	
+    
+    
+Configurando uma chamada salt via crontab 
+	0 0 * * * salt-call state.apply
+	
+	    	
+    	
+    	
+    	
+    	
+    	
