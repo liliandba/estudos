@@ -1,0 +1,65 @@
+CONFIGURAÇÃO EXTERNA -> cópia de arquivo via SALT -> ARQUIVOS PRONTOS 
+	$ORACLE_HOME/sqlplus/admin/glogin.sql 
+	~/scripts/*.sql 
+	menu 
+	
+	
+CONFIGURAÇÃO EXTERNA -> manutenção de arquivos via SALT  
+	~/.bash_profile (parâmetros especificos, como ORACLE_SID, PATH, NLS_DATE_FORMAT, etc) 
+	/etc/oratab 
+
+
+PROCEDIMENTOS de MANUTENÇÃO 	-> script agendado via Jenkis -> FINALIZANDO 
+	Expurgo do Log do Listener (listener.log, xml.log)  - em processo de teste 
+	Expurgo de log do asm listener -- em processo de teste
+	Expurto de logs de auditoria -- em criação 
+
+	
+PARÂMETROS - CONFIGURAÇõES INTERNA de frameworks 
+	LISTENER (listener.log sempre configurado )
+	ADRCI (retenções de trace files e alerts das instâncias)
+	RMAN 
+	  Backup controlfile on 
+
+
+PARÂMETROS DE BANCO DE DADOS / instancia 
+	autoextend on
+	maxsize unlimited
+	OMF
+	Block Change Tracking
+	force logging
+	intervalo de coleta AWR 
+	Perfstat
+	profiles 
+	uso do spfile
+	FRA 
+	auditoria
+	transactions, processes, sessions
+	db_files
+
+
+OBJETOS DE BANCO DE DADOS 
+	View para monitoração do alert.log 
+
+RELATORIO 
+	Performance
+	Queries mais rodadas no banco 
+	
+	Segurança
+
+
+INVENTÁRIO de banco de dados 
+	Inserção automática de dados na wik
+
+
+ATIVIDADES
+	Criação de usuário de banco de dados
+	Criação de tablespace no banco 
+	dump de schemas
+	dump de tabelas 
+	Configuração de coleta de estatísticas 
+	Ajuste do tamanho dos redos 
+	Backup do banco de dados 
+	Validate do backup 
+	adição de datafiles 
+
